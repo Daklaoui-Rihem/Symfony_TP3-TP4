@@ -1,30 +1,38 @@
 {% extends 'base.html.twig' %}
 
-{% block title %} Liste des Articles {% endblock %}
+{% block title %}Liste des Articles{% endblock %}
 
 {% block body %}
-    <h1 class="mt-4 mb-4">Articles</h1>
-
-    {% if articles %}
-        <table id="articles" class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Article</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for article in articles %}
+    <div class="container mt-4">
+        <h1>Liste des Articles</h1>
+        <a href="{{ path('new_article') }}" class="btn btn-primary mb-3">Ajouter un Article</a>
+        
+        {% if articles %}
+            <table id="articles" class="table table-striped">
+                <thead>
                     <tr>
-                        <td>{{ article }}</td>
-                        <td>
-                            <a href="/article/1" class="btn btn-dark">Détails</a>
-                        </td>
+                        <th>Nom</th>
+                        <th>Prix</th>
+                        <th>Actions</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>Aucun articles</p>
-    {% endif %}
+                </thead>
+                <tbody>
+                    {% for article in articles %}
+                        <tr>
+                            <td>{{ article.nom }}</td>
+                            <td>{{ article.prix }}</td>
+                            <td>
+                                <a href="{{ path('article_show', {'id': article.id}) }}" class="btn btn-dark">Détails</a>
+                                <a href="{{ path('edit_article', {'id': article.id}) }}" class="btn btn-dark">Modifier</a>
+                                <a href="{{ path('delete_article', {'id': article.id}) }}" class="btn btn-danger" 
+                                   onclick="return confirm('Etes-vous sûr de supprimer cet article?');">Supprimer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Aucun articles</p>
+        {% endif %}
+    </div>
 {% endblock %}
