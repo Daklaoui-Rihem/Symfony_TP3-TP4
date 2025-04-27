@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Form\ArticleType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,28 +36,26 @@ class ArticleController extends AbstractController
     }
 
     #[Route('/article/new', name: 'new_article')]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $article = new Article();
-        $form = $this->createFormBuilder($article)
-            ->add('nom', TextType::class)
-            ->add('prix', TextType::class)
-            ->add('save', SubmitType::class, ['label' => 'Créer'])
-            ->getForm();
-            
-        $form->handleRequest($request);
+public function new(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $article = new Article();
+    $form = $this->createForm(ArticleType::class, $article);
+    $form->handleRequest($request);
+    
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Form is valid, proceed with saving
+        $entityManager->persist($article);
+        $entityManager->flush();
         
-        if ($form->isSubmitted() && $form->isValid()) {
-            $article = $form->getData();
-            
-            $entityManager->persist($article);
-            $entityManager->flush();
-            
-            return $this->redirectToRoute('article_list');
-        }
-        
-        return $this->render('articles/new.html.twig', ['form' => $form]);
+        $this->addFlash('success', 'Article created successfully');
+        return $this->redirectToRoute('article_list');
     }
+    
+    // Either the form was not submitted or it contains validation errors
+    return $this->render('articles/new.html.twig', [
+        'form' => $form->createView()
+    ]);
+}
 
     #[Route('/article/{id}', name: 'article_show')]
     public function show(EntityManagerInterface $entityManager, int $id): Response
@@ -76,23 +75,21 @@ class ArticleController extends AbstractController
         $article = $entityManager->getRepository(Article::class)->find($id);
         
         if (!$article) {
-            throw $this->createNotFoundException('Article non trouvé');
+            throw $this->createNotFoundException('Article not found');
         }
         
-        $form = $this->createFormBuilder($article)
-            ->add('nom', TextType::class)
-            ->add('prix', TextType::class)
-            ->add('save', SubmitType::class, ['label' => 'Modifier'])
-            ->getForm();
-            
+        $form = $this->createForm(ArticleType::class, $article);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            
             return $this->redirectToRoute('article_list');
         }
         
-        return $this->render('articles/edit.html.twig', ['form' => $form]);
+        return $this->render('articles/edit.html.twig', [
+            'form' => $form->createView()
+        ]);
     }
 
     #[Route('/article/delete/{id}', name: 'delete_article')]

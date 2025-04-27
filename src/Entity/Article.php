@@ -3,8 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ArticleRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 class Article
@@ -15,10 +15,22 @@ class Article
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "The name cannot be blank")]
+    #[Assert\Length(
+        min: 5,
+        max: 50,
+        minMessage: "The name must be at least {{ limit }} characters long",
+        maxMessage: "The name cannot be longer than {{ limit }} characters"
+    )]
     private ?string $nom = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $prix = null;
+    
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    #[Assert\NotBlank(message: "The price cannot be blank")]
+    #[Assert\NotEqualTo(
+        value: 0,
+        message: "The price must not be equal to 0"
+    )]
+    private ?float $prix = null;
 
     public function getId(): ?int
     {
@@ -33,19 +45,19 @@ class Article
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
+        
         return $this;
     }
 
-    public function getPrix(): ?string
+    public function getPrix(): ?float
     {
         return $this->prix;
     }
 
-    public function setPrix(?string $prix): static
+    public function setPrix(float $prix): static
     {
         $this->prix = $prix;
-
+        
         return $this;
     }
 }
