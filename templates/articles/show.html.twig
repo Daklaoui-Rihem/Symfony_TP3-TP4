@@ -1,12 +1,21 @@
+{# templates/articles/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ article.nom }}{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
+    <div class="container my-4">
         <h1>{{ article.nom }}</h1>
-        <p class="lead">Prix: {{ article.prix }} €</p>
-        <hr>
-        <a href="{{ path('article_list') }}" class="btn btn-secondary">Retour à la liste</a>
+        
+        <div class="my-3">
+            <p><strong>Prix:</strong> {{ article.prix }}</p>
+            <p><strong>Catégorie:</strong> {{ article.category.titre }}</p>
+            <p><strong>Description de la catégorie:</strong> {{ article.category.description }}</p>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ path('article_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <a href="{{ path('article_edit', {'id': article.id}) }}" class="btn btn-primary">Modifier</a>
+        </div>
     </div>
 {% endblock %}

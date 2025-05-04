@@ -32,6 +32,23 @@ class Article
     )]
     private ?float $prix = null;
 
+    // In App\Entity\Article
+
+#[ORM\ManyToOne(inversedBy: 'articles')]
+#[ORM\JoinColumn(nullable: false)]
+private ?Category $category = null;
+
+public function getCategory(): ?Category
+{
+    return $this->category;
+}
+
+public function setCategory(?Category $category): self
+{
+    $this->category = $category;
+    return $this;
+}
+
     public function getId(): ?int
     {
         return $this->id;

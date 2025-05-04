@@ -35,76 +35,69 @@ class ArticleController extends AbstractController
         return new Response('Article enregistré avec id ' . $article->getId());
     }
 
+
     #[Route('/article/new', name: 'new_article')]
-public function new(Request $request, EntityManagerInterface $entityManager): Response
-{
-    $article = new Article();
-    $form = $this->createForm(ArticleType::class, $article);
-    $form->handleRequest($request);
-    
-    if ($form->isSubmitted() && $form->isValid()) {
-        // Form is valid, proceed with saving
-        $entityManager->persist($article);
-        $entityManager->flush();
-        
-        $this->addFlash('success', 'Article created successfully');
-        return $this->redirectToRoute('article_list');
-    }
-    
-    // Either the form was not submitted or it contains validation errors
-    return $this->render('articles/new.html.twig', [
-        'form' => $form->createView()
-    ]);
-}
-
-    #[Route('/article/{id}', name: 'article_show')]
-    public function show(EntityManagerInterface $entityManager, int $id): Response
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $article = $entityManager->getRepository(Article::class)->find($id);
-        
-        if (!$article) {
-            throw $this->createNotFoundException('Article non trouvé');
-        }
-        
-        return $this->render('articles/show.html.twig', ['article' => $article]);
-    }
-
-    #[Route('/article/edit/{id}', name: 'edit_article')]
-    public function edit(Request $request, EntityManagerInterface $entityManager, int $id): Response
-    {
-        $article = $entityManager->getRepository(Article::class)->find($id);
-        
-        if (!$article) {
-            throw $this->createNotFoundException('Article not found');
-        }
-        
+        $article = new Article();
         $form = $this->createForm(ArticleType::class, $article);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($article);
             $entityManager->flush();
             
-            return $this->redirectToRoute('article_list');
+            $this->addFlash('success', 'Article créé avec succès');
+            return $this->redirectToRoute('article_index');
         }
         
-        return $this->render('articles/edit.html.twig', [
-            'form' => $form->createView()
+        return $this->render('articles/new.html.twig', [
+            'form' => $form->createView(),
         ]);
-    }
+}
 
-    #[Route('/article/delete/{id}', name: 'delete_article')]
-    public function delete(EntityManagerInterface $entityManager, int $id): Response
-    {
-        $article = $entityManager->getRepository(Article::class)->find($id);
-        
-        if (!$article) {
-            throw $this->createNotFoundException('Article non trouvé');
-        }
-        
-        $entityManager->remove($article);
+#[Route('/article/{id}', name: 'article_show')]
+public function show(Article $article): Response
+{
+    return $this->render('articles/show.html.twig', [
+        'article' => $article,
+    ]);
+}
+
+#[Route('/article/edit/{id}', name: 'article_edit')]
+public function edit(Request $request, Article $article, EntityManagerInterface $entityManager): Response
+{
+    $form = $this->createForm(ArticleType::class, $article);
+    $form->handleRequest($request);
+    
+    if ($form->isSubmitted() && $form->isValid()) {
         $entityManager->flush();
         
-        return $this->redirectToRoute('article_list');
+        $this->addFlash('success', 'Article modifié avec succès');
+        return $this->redirectToRoute('article_index');
+    }
+    
+    return $this->render('articles/edit.html.twig', [
+        'article' => $article,
+        'form' => $form->createView(),
+    ]);
+}
+
+#[Route('/article/delete/{id}', name: 'article_delete')]
+public function delete(Article $article, EntityManagerInterface $entityManager): Response
+{
+    $entityManager->remove($article);
+    $entityManager->flush();
+    
+    $this->addFlash('success', 'Article supprimé avec succès');
+    return $this->redirectToRoute('article_index');
+}
+    #[Route('/', name: 'article_index')]
+    public function index(ArticleRepository $articleRepository): Response
+    {
+        return $this->render('articles/index.html.twig', [
+            'articles' => $articleRepository->findAll(),
+        ]);
     }
 }
 ?>
